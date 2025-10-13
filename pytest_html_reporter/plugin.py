@@ -11,6 +11,7 @@ from collections import Counter
 from PIL import Image
 from io import BytesIO
 import shutil
+import re
 
 _total = _executed = 0
 _pass = _fail = 0
@@ -335,10 +336,10 @@ class HTMLReporter(object):
                     if rep.longrepr:
                         longerr = ""
                         for line in rep.longreprtext.splitlines():
-                            exception = line.startswith("E   ")
+                            exception = line.startswith("FAILURE: ")
                             if exception:
                                 longerr += line + "\n"
-                        self.update_test_error(longerr.replace("E    ", ""))
+                        self.update_test_error(longerr.replace("FAILURE: ", ""))
             else:
                 self.increment_error()
                 self.update_test_status("ERROR")
@@ -612,8 +613,13 @@ class HTMLReporter(object):
             else:
                 _sskip_tests += 1
 
+    def escape_ansi(self, line):
+        ansi_escape = re.compile(r'(?:\x1B[@-_]|[\x80-\x9F])[0-?]*[ -/]*[@-~]')
+        return ansi_escape.sub('', line)
+
     def update_test_error(self, msg):
         global _current_error
+        msg = self.escape_ansi(msg)
         _current_error = msg
 
     def update_test_status(self, status):
