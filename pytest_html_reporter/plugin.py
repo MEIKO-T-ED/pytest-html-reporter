@@ -336,10 +336,12 @@ class HTMLReporter(object):
                     if rep.longrepr:
                         longerr = ""
                         for line in rep.longreprtext.splitlines():
-                            exception = line.startswith("FAILURE: ")
+                            exception = line.startswith("FAILURE: ") or line.startswith("E   ")
                             if exception:
                                 longerr += line + "\n"
-                        self.update_test_error(longerr.replace("FAILURE: ", ""))
+                        longerr = longerr.replace("FAILURE: ", "")
+                        longerr = longerr.replace("E    ", "")
+                        self.update_test_error(longerr)
             else:
                 self.increment_error()
                 self.update_test_status("ERROR")
